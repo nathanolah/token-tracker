@@ -2,9 +2,9 @@
 #
 import mysql.connector
 from mysql.connector import errorcode
-from singleton import DatabaseConnection
+from singleton import DatabaseManager
 
-db = DatabaseConnection()
+db = DatabaseManager()
 conn = db.connect()
 cursor = conn.cursor()
 
@@ -82,7 +82,7 @@ class DBHelpers:
                 token_id = result[0]
                 # print("Token already exists. Token ID:", token_id)
             else:
-                # token not found, insert token
+                # Token not found, insert token
                 sql = 'INSERT INTO tokens (token_address) VALUES (%s)'
                 cursor.execute(sql, (token_address,))
                 conn.commit()
