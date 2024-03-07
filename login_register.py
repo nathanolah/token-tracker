@@ -1,20 +1,15 @@
-from singleton import DatabaseManager, SessionManager
-from utils.db_helpers import DBHelpers
+from singleton import SessionManager
+from utils.db_helpers import DBHelpersFactory
 import getpass
 import bcrypt
 
-db = DatabaseManager()
-conn = db.connect()
-cursor = conn.cursor()
-
-db_helpers = DBHelpers()
 session_manager = SessionManager()
+helper_factory = DBHelpersFactory()
+user_helper = helper_factory.create_helper('user')
 
 # Find if username exists
 def check_username(username):
-    sql = 'SELECT username from users WHERE username = %s'
-    cursor.execute(sql, (username,))
-    return cursor.fetchone() is not None
+    return user_helper.select_user(username) is not None
 
 def register():
     while True:
@@ -26,17 +21,13 @@ def register():
 
     password = getpass.getpass('Enter password: ')
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-    
-    db_helpers.insert_user(username, hashed_password)
+    user_helper.insert(username, hashed_password)
     print('Registration was successful!')
 
 def login():
     username = input('Enter username: ')
     password = getpass.getpass('Enter password: ')
-
-    sql = 'SELECT password FROM users WHERE username = %s'
-    cursor.execute(sql, (username,))
-    result = cursor.fetchone()
+    result = user_helper.select_hashed_password(username)
 
     if result:
         hashed_password = result[0]

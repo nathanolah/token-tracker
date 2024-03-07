@@ -1,46 +1,59 @@
-##
 #
 from observer import observer
-from singleton import DatabaseManager, SessionManager
-from utils.db_helpers import DBHelpers
+from singleton import SessionManager
+from utils.db_helpers import DBHelpersFactory
 from login_register import register, login, logout
+
+helper_factory = DBHelpersFactory()
+session_manager = SessionManager()
 
 print("\n")
 print("Token-Tracker")
 print("********************")
 
-db = DatabaseManager()
-conn = db.connect()
-mycursor = conn.cursor()
+def login_or_register():
+    while True:
+        choice = input("Login or Register? (login/register): ").lower()
+        if choice == "login":
+            username = login()
+            if username:
+                return username
+        elif choice == "register":
+            register()
+        else:
+            print("Invalid choice. Please enter 'login' or 'register'.")
 
-db_helpers = DBHelpers()
-session_manager = SessionManager()
-
-# Login/Sign-up
-
-# register()
-
-notDone = True
-while notDone:
-    username = login()
+not_done = True
+while not_done:
+    username = login_or_register()
     if username is None:
-        cmd = input("Try again? y/n: ")
+        cmd = input("Try again? (y/n): ").lower()
         if cmd != 'y':
-            notDone = False
+            not_done = False
     else:
-        notDone = False
+        not_done = False
 
 # create session passing in the username, so we have a globally accessible session id
 if username:
     session_id = session_manager.create_session(username)
 
-    # print(session_id)
-    # print(session_manager.get_username(session_id))
+    # view portfolio
+        # view token details
+            # add token to portfolio
+            # remove token from portfolio
+        # Sort by metric
 
-    # print(session_manager.get_current_session())
+    # Observe tokens prices
+
+    # Total porfolio value
+
+    # Change fiat currency
+
+    print(session_id)
+    print(session_manager.get_username(session_id))
+    print(session_manager.get_current_session())
 
     logout()
-
 
 # Insert User
 # db_helpers.insert_user("john123", "doe123")
@@ -60,7 +73,7 @@ if username:
 # Remove token for a user
 # db_helpers.add_token_for_user('user123', '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
 
-db.close()
+# db.close()
 
 # cmd = input("Would you like to observe list of tokens y/n: ")
 # if (cmd == 'y'):

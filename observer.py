@@ -108,6 +108,8 @@ def observer():
     # if there is no tokens in their list, they need to add tokens to their list. Return back to main menu... 
 
 
+    # get current session
+    
 
 
 
