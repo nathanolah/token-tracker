@@ -1,5 +1,19 @@
 import mysql.connector
 import uuid 
+import configparser
+
+class ConfigManager:
+    _instance = None
+
+    def __new__(cls):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+            cls._instance.config = configparser.ConfigParser()
+            cls._instance.config.read('config.server.cfg')
+        return cls._instance
+    
+    def get_ethplorer_api_key(self):
+        return self.config['API']['ethplorer_api_key']
 
 class DatabaseManager:
     _instance = None
@@ -8,16 +22,18 @@ class DatabaseManager:
         if not cls._instance:
             cls._instance = super().__new__(cls)
             cls._instance._connection = None
+            cls._instance.config = configparser.ConfigParser()
+            cls._instance.config.read('config.server.cfg')
 
         return cls._instance
     
     def connect(self):
         if not self._connection:
             self._connection = mysql.connector.connect(
-                host="bwrtgbx7mfrlbr5trwgr-mysql.services.clever-cloud.com",
-                user="u0zrufutr82wpicp",
-                passwd="7HrKpbNeaajoJbIYeNxs",
-                database="bwrtgbx7mfrlbr5trwgr"
+                host = self.config.get('Database', 'host'),
+                user = self.config.get('Database', 'user'),
+                passwd = self.config.get('Database', 'passwd'),
+                database = self.config.get('Database', 'database')
             )
             print("Connected to MySQL database")
         

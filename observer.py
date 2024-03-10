@@ -4,6 +4,14 @@
 from abc import ABC, abstractmethod
 import requests
 import threading
+from singleton import SessionManager, ConfigManager
+from utils.db_helpers import DBHelpersFactory
+
+config_manager = ConfigManager()
+session_manager = SessionManager()
+helper_factory = DBHelpersFactory()
+user_helper = helper_factory.create_helper('user')
+ethplorer_api_key = config_manager.get_ethplorer_api_key()
 
 class Subject(ABC):
     @abstractmethod
@@ -72,16 +80,16 @@ class User(Observer):
         self.tokens.append(token)
         token.register_observer(self)
 
-Ethplorer_APIKEY = "EK-8yfkZ-tHSLQJ3-bSsNC";
+# Ethplorer_APIKEY = "EK-8yfkZ-tHSLQJ3-bSsNC"
 # Get User details from db (MOCK DATA)
-tokenList = ["0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", "0x6982508145454Ce325dDbE47a25d4ec3d2311933"]
+# tokenList = ["0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", "0x6982508145454Ce325dDbE47a25d4ec3d2311933"]
 
 def observe_tokens(currentUser, event):
     try:
         while not event.is_set():
             for token in currentUser.tokens:
                 try:
-                    res = requests.get(f"https://api.ethplorer.io/getTokenInfo/{token.address}?apiKey={Ethplorer_APIKEY}")
+                    res = requests.get(f"https://api.ethplorer.io/getTokenInfo/{token.address}?apiKey={ethplorer_api_key}")
                     data = res.json()
                     price = float(data['price']['bid'])
                     formatted_price = "{:.8f}".format(price)
@@ -109,31 +117,40 @@ def observer():
 
 
     # get current session
+    # print(session_manager.get_current_session())
+    # get token list from the user from the db, if no tokens in the token list tell user, and return back to menu...
     
+    session = session_manager.get_current_session()
+    username = session[1]
+    print('observer => username : ', username)
 
+    tokenList = user_helper.retrive_tokens(username)
 
+    if not tokenList:
+        print(f'{username} has no tokens in their portfolio')
+    else:
+        currentUser = User(username)
+        
+        for token in tokenList:
+            res = requests.get(f"https://api.ethplorer.io/getTokenInfo/{token}?apiKey={ethplorer_api_key}")
+            data = res.json()
+            # tkn = Token(data['name'], data['price']['bid'], data['address'])
 
-    currentUser = User("Username1")
-    
-    for token in tokenList:
-        res = requests.get(f"https://api.ethplorer.io/getTokenInfo/{token}?apiKey={Ethplorer_APIKEY}")
-        data = res.json()
-        # tkn = Token(data['name'], data['price']['bid'], data['address'])
+            price = float(data['price']['bid'])
+            formatted_price = "{:.8f}".format(price)
 
-        price = float(data['price']['bid'])
-        formatted_price = "{:.8f}".format(price)
+            tkn = Token(data['name'], formatted_price, data['address'])
+            currentUser.add_token(tkn)
 
-        tkn = Token(data['name'], formatted_price, data['address'])
-        currentUser.add_token(tkn)
+        event = threading.Event()
+        thread = threading.Thread(target=observe_tokens, args=(currentUser, event))
+        thread.start()
 
-    event = threading.Event()
-    thread = threading.Thread(target=observe_tokens, args=(currentUser, event))
-    thread.start()
+        input("Press Enter to stop observing tokens...\n")
 
-    input("Press Enter to stop observing tokens...\n")
-
-    event.set()
-    thread.join()
+        event.set()
+        thread.join()
+        
 
 
 

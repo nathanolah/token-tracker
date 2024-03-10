@@ -1,9 +1,10 @@
 #
 from observer import observer
-from singleton import SessionManager
+from singleton import ConfigManager, SessionManager
 from utils.db_helpers import DBHelpersFactory
 from login_register import register, login, logout
 
+config_manager = ConfigManager()
 helper_factory = DBHelpersFactory()
 session_manager = SessionManager()
 
@@ -44,14 +45,16 @@ if username:
         # Sort by metric
 
     # Observe tokens prices
+    observer()
 
     # Total porfolio value
 
     # Change fiat currency
 
-    print(session_id)
-    print(session_manager.get_username(session_id))
-    print(session_manager.get_current_session())
+
+    # print(session_id)
+    # print(session_manager.get_username(session_id))
+    # print(session_manager.get_current_session())
 
     logout()
 
