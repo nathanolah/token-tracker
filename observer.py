@@ -52,7 +52,7 @@ class Token(Subject):
         return self._address
 
     def set_price(self, price):
-        print(f"checking set prices {self._price} and {price}")
+        # print(f"checking set prices {self._price} and {price}")
         if self._price != price:
             self._price = price
             self.notify_observers()
@@ -80,7 +80,6 @@ class User(Observer):
         self.tokens.append(token)
         token.register_observer(self)
 
-# Ethplorer_APIKEY = "EK-8yfkZ-tHSLQJ3-bSsNC"
 # Get User details from db (MOCK DATA)
 # tokenList = ["0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", "0x6982508145454Ce325dDbE47a25d4ec3d2311933"]
 
@@ -109,22 +108,15 @@ def observe_tokens(currentUser, event):
 
 def observer():
     # With the database, get the user name and their tokens 
-
     # Get username based on there id from db, the id is saved after they log in.
     # create user object
     # get their tokenList from db and loop through the list...
     # if there is no tokens in their list, they need to add tokens to their list. Return back to main menu... 
 
-
-    # get current session
-    # print(session_manager.get_current_session())
-    # get token list from the user from the db, if no tokens in the token list tell user, and return back to menu...
-    
     session = session_manager.get_current_session()
     username = session[1]
-    print('observer => username : ', username)
-
-    tokenList = user_helper.retrive_tokens(username)
+    tokenData = user_helper.retrive_tokens(username)
+    tokenList = [token[0] for token in tokenData]
 
     if not tokenList:
         print(f'{username} has no tokens in their portfolio')
@@ -134,8 +126,6 @@ def observer():
         for token in tokenList:
             res = requests.get(f"https://api.ethplorer.io/getTokenInfo/{token}?apiKey={ethplorer_api_key}")
             data = res.json()
-            # tkn = Token(data['name'], data['price']['bid'], data['address'])
-
             price = float(data['price']['bid'])
             formatted_price = "{:.8f}".format(price)
 

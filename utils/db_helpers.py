@@ -63,7 +63,7 @@ class UserDBHelper(DBHelpers):
             cursor.execute(sql, (username,))
             tokens = cursor.fetchall()
             if not tokens:
-                print(f"User: '{username}' not found")
+                print(f"User: '{username}' no tokens found")
 
             return tokens
         except mysql.connector.Error as err:

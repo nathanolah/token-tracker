@@ -39,6 +39,8 @@ if username:
     session_id = session_manager.create_session(username)
 
     # view portfolio
+    
+
         # view token details
             # add token to portfolio
             # remove token from portfolio
