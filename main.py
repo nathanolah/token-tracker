@@ -1,17 +1,19 @@
 #
-from observer import observer
 from singleton import ConfigManager, SessionManager
+from facade import PortfolioFacade
 from utils.db_helpers import DBHelpersFactory
 from login_register import register, login, logout
 
 config_manager = ConfigManager()
 helper_factory = DBHelpersFactory()
 session_manager = SessionManager()
+portfolio_facade = PortfolioFacade()
 
 print("\n")
 print("Token-Tracker")
 print("********************")
 
+# TODO : maybe add this function to login_register file, and make it an object to access the functions...
 def login_or_register():
     while True:
         choice = input("Login or Register? (login/register): ").lower()
@@ -37,6 +39,7 @@ while not_done:
 # create session passing in the username, so we have a globally accessible session id
 if username:
     session_id = session_manager.create_session(username)
+    portfolio_facade.main_menu()
 
     # view portfolio
     
@@ -47,11 +50,13 @@ if username:
         # Sort by metric
 
     # Observe tokens prices
-    observer()
+    # observer()
 
     # Total porfolio value
 
     # Change fiat currency
+
+    # View top tokens
 
 
     # print(session_id)
