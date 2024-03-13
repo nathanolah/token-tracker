@@ -1,4 +1,4 @@
-#
+################################################################################
 import mysql.connector
 from mysql.connector import errorcode
 from singleton import DatabaseManager

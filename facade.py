@@ -1,5 +1,5 @@
 #
-#
+################################################################################
 from singleton import SessionManager
 from observer import observer
 from services.token_service import TokenService
@@ -22,10 +22,10 @@ class PortfolioFacade:
         while True:
             print("Main Menu:")
             print("1. View Portfolio")
-            print("View Top Ethereum Tokens")
+            print("View Top Ethereum Tokens")#####
             print("2. Observe Tokens Prices")
             print("3. Calculate Total Portfolio")
-            print("4. Change Fiat Currency") # global currency value switched in singleton, defaults at USD...
+            print("4. Change Fiat Currency") 
             print("5. Exit")
             choice = input("Enter your choice: ")
 

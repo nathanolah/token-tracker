@@ -1,4 +1,6 @@
 #
+from services.currency_service import CurrencyAPIProxy
+
 from singleton import ConfigManager, DatabaseManager, SessionManager
 from facade import PortfolioFacade
 from utils.db_helpers import DBHelpersFactory
@@ -30,8 +32,11 @@ while not_done:
 # create session passing in the username, so we have a globally accessible session id
 if username:
     session_id = session_manager.create_session(username)
-    portfolio_facade.main_menu()
+    # portfolio_facade.main_menu()
 
+    currency_proxy = CurrencyAPIProxy()
+    print(currency_proxy.get_exchange_rate('EUR,CAD,USD,CNY,GBP,AUD,JPY'))
+    
     # view portfolio
         # view token details
             # add token to portfolio
