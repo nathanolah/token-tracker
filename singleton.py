@@ -14,6 +14,9 @@ class ConfigManager:
     
     def get_ethplorer_api_key(self):
         return self.config['API']['ethplorer_api_key']
+    
+    def get_currency_api_key(self):
+        return self.config['API']['currency_api_key']
 
 class DatabaseManager:
     _instance = None
@@ -35,14 +38,14 @@ class DatabaseManager:
                 passwd = self.config.get('Database', 'passwd'),
                 database = self.config.get('Database', 'database')
             )
-            print("Connected to MySQL database")
+            # print("Connected to MySQL database")
         
         return self._connection
     
     def close(self):
         if self._connection:
             self._connection.close()
-            print("MySQL connection closed")
+            # print("MySQL connection closed")
             self._connection = None
 
 class SessionManager:

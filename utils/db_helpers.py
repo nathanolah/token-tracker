@@ -173,34 +173,34 @@ class TokenDBHelper(DBHelpers):
             else:
                 print(f'Error: {err}')
 
-    # 
-    # Database Setup/Reset
-    #
-    def reset_database(self):
-        cmd = input('Are you sure you want to reset the database y/n?')
-        if (cmd == 'y'):
-            cursor.execute('DROP TABLE IF EXISTS users')
-            cursor.execute('DROP TABLE IF EXISTS tokens')
-            cursor.execute('DROP TABLE IF EXISTS user_tokens')
+# 
+# Database Setup/Reset
+#
+def reset_database():
+    cmd = input('Are you sure you want to reset the database y/n?')
+    if (cmd == 'y'):
+        cursor.execute('DROP TABLE IF EXISTS users')
+        cursor.execute('DROP TABLE IF EXISTS tokens')
+        cursor.execute('DROP TABLE IF EXISTS user_tokens')
 
-            sql = '''CREATE TABLE users (
-                        user_id INT AUTO_INCREMENT PRIMARY KEY, 
-                        username VARCHAR(255) UNIQUE, 
-                        password VARCHAR(255)
-                    )'''
-            cursor.execute(sql)
+        sql = '''CREATE TABLE users (
+                    user_id INT AUTO_INCREMENT PRIMARY KEY, 
+                    username VARCHAR(255) UNIQUE, 
+                    password VARCHAR(255)
+                )'''
+        cursor.execute(sql)
 
-            sql = '''CREATE TABLE tokens (
-                        token_id INT AUTO_INCREMENT PRIMARY KEY, 
-                        token_address VARCHAR(255) UNIQUE
-                    )'''
-            cursor.execute(sql)
+        sql = '''CREATE TABLE tokens (
+                    token_id INT AUTO_INCREMENT PRIMARY KEY, 
+                    token_address VARCHAR(255) UNIQUE
+                )'''
+        cursor.execute(sql)
 
-            sql = '''CREATE TABLE user_tokens (
-                        user_id INT,
-                        token_id INT, 
-                        FOREIGN KEY (user_id) REFERENCES users(user_id), 
-                        FOREIGN KEY (token_id) REFERENCES tokens(token_id),
-                        PRIMARY KEY (user_id, token_id)     
-                    )'''
-            cursor.execute(sql)
+        sql = '''CREATE TABLE user_tokens (
+                    user_id INT,
+                    token_id INT, 
+                    FOREIGN KEY (user_id) REFERENCES users(user_id), 
+                    FOREIGN KEY (token_id) REFERENCES tokens(token_id),
+                    PRIMARY KEY (user_id, token_id)     
+                )'''
+        cursor.execute(sql)

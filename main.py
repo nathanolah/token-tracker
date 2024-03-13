@@ -1,30 +1,21 @@
 #
-from singleton import ConfigManager, SessionManager
+from singleton import ConfigManager, DatabaseManager, SessionManager
 from facade import PortfolioFacade
 from utils.db_helpers import DBHelpersFactory
-from login_register import register, login, logout
+from login_register import login_or_register, logout
 
 config_manager = ConfigManager()
 helper_factory = DBHelpersFactory()
 session_manager = SessionManager()
 portfolio_facade = PortfolioFacade()
 
+db = DatabaseManager()
+conn = db.connect()
+
 print("\n")
 print("Token-Tracker")
 print("********************")
-
-# TODO : maybe add this function to login_register file, and make it an object to access the functions...
-def login_or_register():
-    while True:
-        choice = input("Login or Register? (login/register): ").lower()
-        if choice == "login":
-            username = login()
-            if username:
-                return username
-        elif choice == "register":
-            register()
-        else:
-            print("Invalid choice. Please enter 'login' or 'register'.")
+print("\n")
 
 not_done = True
 while not_done:
@@ -42,8 +33,6 @@ if username:
     portfolio_facade.main_menu()
 
     # view portfolio
-    
-
         # view token details
             # add token to portfolio
             # remove token from portfolio
@@ -57,7 +46,6 @@ if username:
     # Change fiat currency
 
     # View top tokens
-
 
     # print(session_id)
     # print(session_manager.get_username(session_id))
@@ -83,11 +71,6 @@ if username:
 # Remove token for a user
 # db_helpers.add_token_for_user('user123', '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
 
-# db.close()
-
-# cmd = input("Would you like to observe list of tokens y/n: ")
-# if (cmd == 'y'):
-#     observer()
-
-print('goodbye')
-
+db.close()
+print("\n")
+print('Goodbye')

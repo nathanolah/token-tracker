@@ -10,6 +10,38 @@ user_helper = helper_factory.create_helper('user')
 ethplorer_api_key = config_manager.get_ethplorer_api_key()
 
 class TokenService():
+    # 
+    def calculate_portfolio(self, username):
+        total_balance = 0
+        tokenData = user_helper.retrive_tokens(username)
+        tokenList = [token[0] for token in tokenData]
+
+        if not tokenList:
+            print(f"{username} has no tokens in their portfolio")
+        else:
+            print(f"{username}'s Portfolio")
+            for i, token in enumerate(tokenList, 1):
+                res = requests.get(f"https://api.ethplorer.io/getTokenInfo/{token}?apiKey={ethplorer_api_key}")
+                data = res.json()
+
+                price = float(data['price']['bid'])
+                formatted_price = "{:.8f}".format(price)
+                name = data['name']
+                address = data['address']
+                print(f"{i}. Token name: {name} | Price: {formatted_price} | Address: {address}")
+                
+                while True:
+                    try:
+                        tokenQuantity = float(input(f"Please enter token amount for {name}: "))
+                        break
+                    except ValueError:
+                        print("Please enter a valid number.")
+
+                # Calculate total balance for this token
+                total_balance += price * tokenQuantity
+
+            print(f'Total Portfolio Balance: {total_balance}')
+
     # Perform validation checks on the token address
     def validate_token_address(self, token_address):
         return len(token_address) == 42 and token_address.startswith("0x")

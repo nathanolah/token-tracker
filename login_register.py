@@ -7,6 +7,18 @@ session_manager = SessionManager()
 helper_factory = DBHelpersFactory()
 user_helper = helper_factory.create_helper('user')
 
+def login_or_register():
+    while True:
+        choice = input("Login or Register? (login/register): ").lower()
+        if choice == "login":
+            username = login()
+            if username:
+                return username
+        elif choice == "register":
+            register()
+        else:
+            print("Invalid choice. Please enter 'login' or 'register'.")
+
 # Find if username exists
 def check_username(username):
     return user_helper.select_user(username) is not None

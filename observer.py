@@ -80,9 +80,6 @@ class User(Observer):
         self.tokens.append(token)
         token.register_observer(self)
 
-# Get User details from db (MOCK DATA)
-# tokenList = ["0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", "0x6982508145454Ce325dDbE47a25d4ec3d2311933"]
-
 def observe_tokens(currentUser, event):
     try:
         while not event.is_set():

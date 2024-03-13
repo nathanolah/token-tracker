@@ -4,6 +4,7 @@ from singleton import SessionManager
 from observer import observer
 from services.token_service import TokenService
 
+# add into facade constructor
 session_manager = SessionManager()
 token_service = TokenService()
 
@@ -21,9 +22,10 @@ class PortfolioFacade:
         while True:
             print("Main Menu:")
             print("1. View Portfolio")
+            print("View Top Ethereum Tokens")
             print("2. Observe Tokens Prices")
-            print("3. Total Portfolio Value")
-            print("4. Change Fiat Currency")
+            print("3. Calculate Total Portfolio")
+            print("4. Change Fiat Currency") # global currency value switched in singleton, defaults at USD...
             print("5. Exit")
             choice = input("Enter your choice: ")
 
@@ -32,8 +34,7 @@ class PortfolioFacade:
             elif choice == "2":
                 observer()
             elif choice == "3":
-                print('calculate portfolio')
-                # self.calculate_portfolio_value(username)
+                token_service.calculate_portfolio(username)
             elif choice == "4":
                 print('change fiat currency')
                 # self.change_fiat_currency()
