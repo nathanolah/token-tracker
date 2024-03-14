@@ -1,3 +1,4 @@
+import json
 import requests
 from singleton import SessionManager, ConfigManager
 from utils.db_helpers import DBHelpersFactory
@@ -10,6 +11,28 @@ user_helper = helper_factory.create_helper('user')
 ethplorer_api_key = config_manager.get_ethplorer_api_key()
 
 class TokenService():
+    def view_top_tokens(self):
+        res = requests.get(f"https://api.ethplorer.io/getTopTokens?apiKey={ethplorer_api_key}")
+
+        data = res.json()
+        if 'tokens' in data:
+            for token in data['tokens']:
+                # Check if 'name' key exists in the token
+
+                # display address, price, market cap, etc... 
+                # option to add token to portfolio
+                # add a check for type of currency USD, CAD, etc...
+                if 'name' in token:
+                    print(token['name'])
+                else:
+                    print("Token name not found")
+
+
+        # formatted_json = json.dumps(data, indent=4)
+        # print(formatted_json)
+
+        
+
     # 
     def calculate_portfolio(self, username):
         total_balance = 0

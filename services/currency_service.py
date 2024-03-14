@@ -14,6 +14,10 @@ from singleton import ConfigManager
 config_manager = ConfigManager()
 currency_api_key = config_manager.get_currency_api_key()
 
+# TODO: make a function in the singleton that sets the currency type, defaults to USD
+# this function can be used anywhere in the program that needs the price
+# def get_currency_type()
+
 # Default base currency is USD
 class CurrencyService(ABC):
     @abstractmethod

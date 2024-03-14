@@ -23,6 +23,7 @@ class PortfolioFacade:
             print("Main Menu:")
             print("1. View Portfolio")
             print("View Top Ethereum Tokens")#####
+            
             print("2. Observe Tokens Prices")
             print("3. Calculate Total Portfolio")
             print("4. Change Fiat Currency") 

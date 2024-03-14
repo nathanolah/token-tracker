@@ -1,5 +1,6 @@
 #
 from services.currency_service import CurrencyAPIProxy
+from services.token_service import TokenService
 
 from singleton import ConfigManager, DatabaseManager, SessionManager
 from facade import PortfolioFacade
@@ -35,7 +36,10 @@ if username:
     # portfolio_facade.main_menu()
 
     currency_proxy = CurrencyAPIProxy()
-    print(currency_proxy.get_exchange_rate('EUR,CAD,USD,CNY,GBP,AUD,JPY'))
+    # print(currency_proxy.get_exchange_rate('EUR,CAD,USD,CNY,GBP,AUD,JPY'))
+    token_service = TokenService()
+    token_service.view_top_tokens()
+
     
     # view portfolio
         # view token details
