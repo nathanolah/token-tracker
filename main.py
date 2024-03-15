@@ -5,12 +5,14 @@ from facade import PortfolioFacade
 from utils.db_helpers import DBHelpersFactory
 from login_register import login_or_register, logout
 
+# Setup
 config_manager = ConfigManager()
 helper_factory = DBHelpersFactory()
 session_manager = SessionManager()
 currency_manager = CurrencyManager()
 portfolio_facade = PortfolioFacade()
 
+# Database Setup
 db = DatabaseManager()
 conn = db.connect()
 
@@ -29,18 +31,9 @@ while not_done:
         not_done = False
 
 if username:
-    # create session passing in the username, so we have a globally accessible session id
-    session_id = session_manager.create_session(username)
+    # Create session for user
+    session_manager.create_session(username)
     portfolio_facade.main_menu()
-    # view portfolio
-        # view token details
-            # add token to portfolio
-            # remove token from portfolio
-        # Sort by metric
-
-    # Observe tokens prices
-    # observer()
-
     logout()
 
 db.close()
