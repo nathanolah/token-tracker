@@ -1,39 +1,71 @@
-import json
+#
+################################################################################
 import requests
-from singleton import SessionManager, ConfigManager
+from singleton import SessionManager, ConfigManager, CurrencyManager
 from utils.db_helpers import DBHelpersFactory
+from services.currency_service import CurrencyAPIProxy
 
 config_manager = ConfigManager()
+currency_manager = CurrencyManager()
 session_manager = SessionManager()
 helper_factory = DBHelpersFactory()
+currency_service = CurrencyAPIProxy()
 
 user_helper = helper_factory.create_helper('user')
 ethplorer_api_key = config_manager.get_ethplorer_api_key()
 
 class TokenService():
-    def view_top_tokens(self):
+    # View top Ethereum tokens
+    def view_top_tokens(self, username):
         res = requests.get(f"https://api.ethplorer.io/getTopTokens?apiKey={ethplorer_api_key}")
-
         data = res.json()
+
         if 'tokens' in data:
-            for token in data['tokens']:
+            for i, token in enumerate(data['tokens'], 1):
                 # Check if 'name' key exists in the token
+                name = token.get('name', "N/A")
 
-                # display address, price, market cap, etc... 
-                # option to add token to portfolio
-                # add a check for type of currency USD, CAD, etc...
-                if 'name' in token:
-                    print(token['name'])
+                # Check if 'symbol' key exists in the token
+                symbol = token.get('symbol', "N/A")
+
+                # Check if 'address' key exists in the token
+                address = token.get('address', "N/A")
+
+                # Check if 'price' key exists in the token and if it's a dictionary
+                price = token['price'].get('bid', "N/A") if isinstance(token.get('price'), dict) else "N/A"
+
+                # Check if 'marketCapUsd' key exists in the 'price' dictionary
+                market_cap_usd = token['price'].get('marketCapUsd', "N/A") if isinstance(token.get('price'), dict) else "N/A"
+
+                converted_price = currency_service.convert_value(price)
+                converted_mc = currency_service.convert_value(market_cap_usd)
+                currency_type = currency_manager.get_currency()
+
+                if converted_price:
+                    formatted_price = "{:.8f}".format(converted_price)
+
+                # Print token information
+                print(f"{i}. Token: {name} ({symbol}) | Price: ${formatted_price} {currency_type} | Market Cap: ${converted_mc} {currency_type} | Address: {address}")
+
+        while True:
+            # Get user input for token selection
+            choice = input("Select a token number to add to your portfolio (or 'q' to go back): ")
+
+            if choice.isdigit():
+                choice = int(choice)
+                if 1 <= choice <= len(data['tokens']):
+                    token_address = data['tokens'][choice - 1].get('address')
+                    user_helper.add_token_to_portfolio(username, token_address)
+                    print("Token added to portfolio successfully.")
+                    break
                 else:
-                    print("Token name not found")
-
-
-        # formatted_json = json.dumps(data, indent=4)
-        # print(formatted_json)
-
-        
-
-    # 
+                    print("Invalid token number.")
+            elif choice.lower() == 'q':
+                break
+            else:
+                print("Invalid input. Please enter a valid token number or 'q' to go back.")
+ 
+    # Calculate total portfolio value, based on given token amounts
     def calculate_portfolio(self, username):
         total_balance = 0
         tokenData = user_helper.retrive_tokens(username)
@@ -85,11 +117,11 @@ class TokenService():
         except Exception as e:
             print(f"Error adding token to portfolio: {e}")
 
-    #
+    # Remove token from user's portfolio
     def remove_token_from_portfolio(self, username, selected_token):
         user_helper.remove_token_for_user(username, selected_token)
 
-    #
+    # View detailed token information and market data
     def view_token_details(self, token):
         # Request token details
         res = requests.get(f"https://api.ethplorer.io/getTokenInfo/{token}?apiKey={ethplorer_api_key}")
@@ -99,7 +131,7 @@ class TokenService():
         print(data)
         input("Press Enter to continue...")
 
-    #
+    # List user's portfolio tokens
     def view_tokens(self, username, option):
         # Get all the user's tokens from the db
         tokenData = user_helper.retrive_tokens(username)

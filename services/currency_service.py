@@ -9,14 +9,11 @@
 ################################################################################
 import requests
 from abc import ABC, abstractmethod
-from singleton import ConfigManager
+from singleton import ConfigManager, CurrencyManager
 
 config_manager = ConfigManager()
+currency_manager = CurrencyManager()
 currency_api_key = config_manager.get_currency_api_key()
-
-# TODO: make a function in the singleton that sets the currency type, defaults to USD
-# this function can be used anywhere in the program that needs the price
-# def get_currency_type()
 
 # Default base currency is USD
 class CurrencyService(ABC):
@@ -40,12 +37,36 @@ class CurrencyAPIProxy(CurrencyService):
         self._real_service = CurrencyAPIService()
         self._exchange_rates = {}
 
-    def get_exchange_rate(self, target_currency):
-        # Check if target currency rate is cached
-        if not self._exchange_rates:
-            exchange_rate_data = self._real_service.get_exchange_rate(target_currency)
-            if exchange_rate_data is not None:
-                for currency, info in exchange_rate_data.items():
-                    self._exchange_rates[currency] = info['value']
-            
-        return self._exchange_rates
+    def get_exchange_rate(self):
+        target_currency = currency_manager.get_currency()
+
+        # Check if target currency is already cached.
+        if target_currency in self._exchange_rates:
+            return self._exchange_rates[target_currency]
+        
+        exchange_rate_data = self._real_service.get_exchange_rate(target_currency)
+        if exchange_rate_data is not None:
+            for currency, info in exchange_rate_data.items():
+                self._exchange_rates[currency] = info['value']
+        
+        return self._exchange_rates.get(target_currency)
+    
+    def change_currency(self):
+        available_currencies = ['EUR', 'CAD', 'USD', 'CNY', 'GBP', 'AUD', 'JPY']
+        new_currency = input("Enter the new currency (EUR, CAD, USD, CNY, GBP, AUD, JPY): ").upper()
+
+        if new_currency in available_currencies:
+            currency_manager.set_currency(new_currency)
+            print(f"Currency changed to {new_currency}")
+        else:
+            print("Invalid currency. Please choose from the available options.")
+        # print(f"{currency_manager.get_currency()}: ${self.get_exchange_rate()}")
+
+    def convert_value(self, value):
+        try:
+            # rate = self.get_exchange_rate() ## using during prod, limited api requests avaliable
+            rate = 1
+            return float(value) * rate
+        except:
+            # print("Value is not numeric")
+            return None

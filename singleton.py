@@ -18,6 +18,21 @@ class ConfigManager:
     
     def get_currency_api_key(self):
         return self.config['API']['currency_api_key']
+    
+class CurrencyManager:
+    _instance = None
+
+    def __new__(cls):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+            cls._instance.currency = "USD"
+        return cls._instance
+
+    def get_currency(self):
+        return self.currency
+    
+    def set_currency(self, new_currency):
+        self.currency = new_currency
 
 class DatabaseManager:
     _instance = None

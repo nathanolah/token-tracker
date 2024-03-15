@@ -126,7 +126,8 @@ class UserDBHelper(DBHelpers):
             # print('Token associated with user successfully.')
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_DUP_ENTRY:
-                print(f"Error: user id: {user_id} is already associated with token id: {token_id}")
+                print("This token is already in your portfolio")
+                # print(f"Error: user id: {user_id} is already associated with token id: {token_id}")
             else:
                 print(f'Error: {err}') 
    

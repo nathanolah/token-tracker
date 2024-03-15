@@ -2,11 +2,13 @@
 ################################################################################
 from singleton import SessionManager
 from observer import observer
+from services.currency_service import CurrencyAPIProxy
 from services.token_service import TokenService
 
 # add into facade constructor
 session_manager = SessionManager()
 token_service = TokenService()
+currency_service = CurrencyAPIProxy()
 
 class PortfolioFacade:
     # def __init__(self):
@@ -22,24 +24,24 @@ class PortfolioFacade:
         while True:
             print("Main Menu:")
             print("1. View Portfolio")
-            print("View Top Ethereum Tokens")#####
-            
-            print("2. Observe Tokens Prices")
-            print("3. Calculate Total Portfolio")
-            print("4. Change Fiat Currency") 
-            print("5. Exit")
+            print("2. View Top Ethereum Tokens")
+            print("3. Observe Tokens Prices")
+            print("4. Calculate Total Portfolio")
+            print("5. Change Fiat Currency") 
+            print("6. Exit")
             choice = input("Enter your choice: ")
 
             if choice == "1":
                 self.view_portfolio_menu(username)
             elif choice == "2":
-                observer()
+                token_service.view_top_tokens(username)
             elif choice == "3":
-                token_service.calculate_portfolio(username)
+                observer()
             elif choice == "4":
-                print('change fiat currency')
-                # self.change_fiat_currency()
+                token_service.calculate_portfolio(username)
             elif choice == "5":
+                currency_service.change_currency()
+            elif choice == "6":
                 break
             else:
                 print("Invalid choice. Please try again.")
