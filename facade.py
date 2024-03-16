@@ -1,15 +1,18 @@
 #
 ################################################################################
-from singleton import SessionManager
 from observer import observer
-from services.currency_service import CurrencyAPIProxy
-from services.token_service import TokenService
+# from singleton import SessionManager
+# from services.currency_service import CurrencyAPIProxy
+# from services.token_service import TokenService
 
 class PortfolioFacade:
-    def __init__(self):
-        self.session_manager = SessionManager()
-        self.token_service = TokenService()
-        self.currency_service = CurrencyAPIProxy()
+    def __init__(self, session_manager, token_service, currency_service):
+        self.session_manager = session_manager
+        self.token_service = token_service
+        self.currency_service = currency_service
+        # self.session_manager = SessionManager()
+        # self.token_service = TokenService()
+        # self.currency_service = CurrencyAPIProxy()
         
     def main_menu(self):
         session = self.session_manager.get_current_session()

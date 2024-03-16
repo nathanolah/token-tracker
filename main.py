@@ -1,16 +1,20 @@
 #
 ################################################################################
+from services.currency_service import CurrencyAPIProxy
+from services.token_service import TokenService
 from singleton import ConfigManager, CurrencyManager, DatabaseManager, SessionManager
 from facade import PortfolioFacade
 from utils.db_helpers import DBHelpersFactory
-from login_register import login_or_register, logout
+from utils.login_register import login_or_register, logout
 
 # Setup
 config_manager = ConfigManager()
+currency_manager = CurrencyManager()
 helper_factory = DBHelpersFactory()
 session_manager = SessionManager()
-currency_manager = CurrencyManager()
-portfolio_facade = PortfolioFacade()
+token_service = TokenService()
+currency_service = CurrencyAPIProxy()
+portfolio_facade = PortfolioFacade(session_manager, token_service, currency_service)
 
 # Database Setup
 db = DatabaseManager()
