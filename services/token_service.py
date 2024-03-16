@@ -1,6 +1,7 @@
 #
 ################################################################################
 import requests
+from tabulate import tabulate
 from singleton import SessionManager, ConfigManager, CurrencyManager
 from utils.db_helpers import DBHelpersFactory
 from services.currency_service import CurrencyAPIProxy
@@ -22,24 +23,24 @@ class TokenService():
 
         if 'tokens' in data:
             for i, token in enumerate(data['tokens'], 1):
-                # Check if 'name' key exists in the token
-                name = token.get('name', "N/A")
+                # Check if token fields exist
+                if 'name' in token:
+                    name = token['name']
+                
+                if 'symbol' in token:
+                    symbol = token['symbol']
 
-                # Check if 'symbol' key exists in the token
-                symbol = token.get('symbol', "N/A")
+                if 'address' in token:
+                    address = token['address']
 
-                # Check if 'address' key exists in the token
-                address = token.get('address', "N/A")
+                if isinstance(token.get('price'), dict):
+                    price = token['price'].get('bid', "N/A")
+                    market_cap_usd = token['price'].get('marketCapUsd', "N/A")
 
-                # Check if 'price' key exists in the token and if it's a dictionary
-                price = token['price'].get('bid', "N/A") if isinstance(token.get('price'), dict) else "N/A"
-
-                # Check if 'marketCapUsd' key exists in the 'price' dictionary
-                market_cap_usd = token['price'].get('marketCapUsd', "N/A") if isinstance(token.get('price'), dict) else "N/A"
-
+                # Convert value based on set fiat currency
                 converted_price = currency_service.convert_value(price)
                 converted_mc = currency_service.convert_value(market_cap_usd)
-                currency_type = currency_manager.get_currency()
+                currency_type = currency_manager.get_currency() 
 
                 if converted_price:
                     formatted_price = "{:.8f}".format(converted_price)
@@ -64,6 +65,11 @@ class TokenService():
                 break
             else:
                 print("Invalid input. Please enter a valid token number or 'q' to go back.")
+
+    # Request token details
+    def fetch_token_details(self, token):
+        res = requests.get(f"https://api.ethplorer.io/getTokenInfo/{token}?apiKey={ethplorer_api_key}")
+        return res.json()
  
     # Calculate total portfolio value, based on given token amounts
     def calculate_portfolio(self, username):
@@ -76,14 +82,18 @@ class TokenService():
         else:
             print(f"{username}'s Portfolio")
             for i, token in enumerate(tokenList, 1):
-                res = requests.get(f"https://api.ethplorer.io/getTokenInfo/{token}?apiKey={ethplorer_api_key}")
-                data = res.json()
+                data = self.fetch_token_details(token)
 
-                price = float(data['price']['bid'])
-                formatted_price = "{:.8f}".format(price)
+                # Convert value based on set fiat currency
+                converted_price = currency_service.convert_value(data['price']['bid'])
+                currency_type = currency_manager.get_currency() 
+                
+                if converted_price:
+                    formatted_price = "{:.8f}".format(converted_price)
+
                 name = data['name']
                 address = data['address']
-                print(f"{i}. Token name: {name} | Price: {formatted_price} | Address: {address}")
+                print(f"{i}. Token name: {name} | Price: ${formatted_price} ({currency_type}) | Address: {address}")
                 
                 while True:
                     try:
@@ -93,15 +103,15 @@ class TokenService():
                         print("Please enter a valid number.")
 
                 # Calculate total balance for this token
-                total_balance += price * tokenQuantity
+                total_balance += converted_price * tokenQuantity
 
-            print(f'Total Portfolio Balance: {total_balance}')
+            print(f'Total Portfolio Balance: ${total_balance} ({currency_type})')
 
     # Perform validation checks on the token address
     def validate_token_address(self, token_address):
         return len(token_address) == 42 and token_address.startswith("0x")
 
-    #
+    # Add token to user's portfolio
     def add_token_to_portfolio(self, username):
         # Get the token address from the user
         token_address = input("Enter the token's contract address: ")
@@ -124,11 +134,36 @@ class TokenService():
     # View detailed token information and market data
     def view_token_details(self, token):
         # Request token details
-        res = requests.get(f"https://api.ethplorer.io/getTokenInfo/{token}?apiKey={ethplorer_api_key}")
-        data = res.json()
+        data = self.fetch_token_details(token)
 
-        # Extract token details
-        print(data)
+        # Convert value based on set fiat currency
+        converted_price = currency_service.convert_value(data["price"]["bid"])
+        converted_mc = currency_service.convert_value(data["price"]["marketCapUsd"])
+        currency_type = currency_manager.get_currency() 
+
+        if converted_price:
+            formatted_price = "{:.8f}".format(converted_price)
+        
+        if data:
+            table_data = [
+                ["Name", data['name']],
+                ["Symbol", data['symbol']],
+                ["Address", data['address']],
+                [f"Price ({currency_type})", formatted_price],
+                [f"Market Cap ({currency_type})", converted_mc],
+                ["Owner", data['owner']],
+                ["Total Supply", data['totalSupply']],
+                ["Transfers Count", data['transfersCount']],
+                ["Transactions Count", data['txsCount']],
+                ["Holders Count", data['holdersCount']],
+                ["Website", data['website']],
+                
+            ]   
+            print(tabulate(table_data, headers=["Token Details", "Values"], tablefmt="simple_grid"))
+        else:
+            print("No token details available.")
+
+        print('\n')
         input("Press Enter to continue...")
 
     # List user's portfolio tokens
@@ -143,14 +178,18 @@ class TokenService():
             while True:
                 print("Tokens in portfolio")
                 for i, token in enumerate(tokenList, 1):
-                    res = requests.get(f"https://api.ethplorer.io/getTokenInfo/{token}?apiKey={ethplorer_api_key}")
-                    data = res.json()
+                    data = self.fetch_token_details(token)
 
-                    price = float(data['price']['bid'])
-                    formatted_price = "{:.8f}".format(price)
+                    # Convert value based on set fiat currency
+                    converted_price = currency_service.convert_value(data["price"]["bid"])
+                    currency_type = currency_manager.get_currency() 
+
+                    if converted_price:
+                        formatted_price = "{:.8f}".format(converted_price)
+
                     name = data['name']
                     address = data['address']
-                    print(f'{i}. Token name: {name} | Price: {formatted_price} | Address: {address}')
+                    print(f'{i}. Token name: {name} | Price: ${formatted_price} ({currency_type}) | Address: {address}')
 
                 if option == "view":
                     choice = input("Enter the number of the token to view details (or 'q' to quit): ")

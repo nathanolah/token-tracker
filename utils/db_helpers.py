@@ -19,7 +19,7 @@ class DBHelpersFactory:
         
 class DBHelpers:
     def insert(self):
-        raise NotImplementedError('SQL operation must be implemented in subsclasses')
+        raise NotImplementedError('SQL operation must be implemented')
     
 class UserDBHelper(DBHelpers):
     # Insert new user into db

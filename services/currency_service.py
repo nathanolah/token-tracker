@@ -68,5 +68,4 @@ class CurrencyAPIProxy(CurrencyService):
             rate = 1
             return float(value) * rate
         except:
-            # print("Value is not numeric")
             return None
