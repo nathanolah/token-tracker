@@ -9,13 +9,15 @@ from services.currency_service import CurrencyAPIProxy
 config_manager = ConfigManager()
 currency_manager = CurrencyManager()
 session_manager = SessionManager()
-helper_factory = DBHelpersFactory()
-currency_service = CurrencyAPIProxy()
-
-user_helper = helper_factory.create_helper('user')
 ethplorer_api_key = config_manager.get_ethplorer_api_key()
 
 class TokenService():
+
+    def __init__(self):
+        self.currency_service = CurrencyAPIProxy()
+        self.db_helper_factory = DBHelpersFactory()
+        self.user_helper = self.db_helper_factory.create_helper('user')
+
     # View top Ethereum tokens
     def view_top_tokens(self, username):
         res = requests.get(f"https://api.ethplorer.io/getTopTokens?apiKey={ethplorer_api_key}")
@@ -38,8 +40,8 @@ class TokenService():
                     market_cap_usd = token['price'].get('marketCapUsd', "N/A")
 
                 # Convert value based on set fiat currency
-                converted_price = currency_service.convert_value(price)
-                converted_mc = currency_service.convert_value(market_cap_usd)
+                converted_price = self.currency_service.convert_value(price)
+                converted_mc = self.currency_service.convert_value(market_cap_usd)
                 currency_type = currency_manager.get_currency() 
 
                 if converted_price:
@@ -56,7 +58,7 @@ class TokenService():
                 choice = int(choice)
                 if 1 <= choice <= len(data['tokens']):
                     token_address = data['tokens'][choice - 1].get('address')
-                    user_helper.add_token_to_portfolio(username, token_address)
+                    self.user_helper.add_token_to_portfolio(username, token_address)
                     print("Token added to portfolio successfully.")
                     break
                 else:
@@ -74,7 +76,7 @@ class TokenService():
     # Calculate total portfolio value, based on given token amounts
     def calculate_portfolio(self, username):
         total_balance = 0
-        tokenData = user_helper.retrive_tokens(username)
+        tokenData = self.user_helper.retrive_tokens(username)
         tokenList = [token[0] for token in tokenData]
 
         if not tokenList:
@@ -85,7 +87,7 @@ class TokenService():
                 data = self.fetch_token_details(token)
 
                 # Convert value based on set fiat currency
-                converted_price = currency_service.convert_value(data['price']['bid'])
+                converted_price = self.currency_service.convert_value(data['price']['bid'])
                 currency_type = currency_manager.get_currency() 
                 
                 if converted_price:
@@ -122,14 +124,14 @@ class TokenService():
 
         # Attempt to add the token to the user's portfolio
         try:
-            user_helper.add_token_to_portfolio(username, token_address)
+            self.user_helper.add_token_to_portfolio(username, token_address)
             print("Token added to portfolio successfully.")
         except Exception as e:
             print(f"Error adding token to portfolio: {e}")
 
     # Remove token from user's portfolio
     def remove_token_from_portfolio(self, username, selected_token):
-        user_helper.remove_token_for_user(username, selected_token)
+        self.user_helper.remove_token_for_user(username, selected_token)
 
     # View detailed token information and market data
     def view_token_details(self, token):
@@ -137,8 +139,8 @@ class TokenService():
         data = self.fetch_token_details(token)
 
         # Convert value based on set fiat currency
-        converted_price = currency_service.convert_value(data["price"]["bid"])
-        converted_mc = currency_service.convert_value(data["price"]["marketCapUsd"])
+        converted_price = self.currency_service.convert_value(data["price"]["bid"])
+        converted_mc = self.currency_service.convert_value(data["price"]["marketCapUsd"])
         currency_type = currency_manager.get_currency() 
 
         if converted_price:
@@ -169,7 +171,7 @@ class TokenService():
     # List user's portfolio tokens
     def view_tokens(self, username, option):
         # Get all the user's tokens from the db
-        tokenData = user_helper.retrive_tokens(username)
+        tokenData = self.user_helper.retrive_tokens(username)
         tokenList = [token[0] for token in tokenData]
 
         if not tokenList:
@@ -181,7 +183,7 @@ class TokenService():
                     data = self.fetch_token_details(token)
 
                     # Convert value based on set fiat currency
-                    converted_price = currency_service.convert_value(data["price"]["bid"])
+                    converted_price = self.currency_service.convert_value(data["price"]["bid"])
                     currency_type = currency_manager.get_currency() 
 
                     if converted_price:

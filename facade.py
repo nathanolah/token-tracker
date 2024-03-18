@@ -1,18 +1,12 @@
 #
 ################################################################################
-from observer import observer
-# from singleton import SessionManager
-# from services.currency_service import CurrencyAPIProxy
-# from services.token_service import TokenService
 
 class PortfolioFacade:
-    def __init__(self, session_manager, token_service, currency_service):
+    def __init__(self, session_manager, token_service, currency_service, user_observer):
         self.session_manager = session_manager
         self.token_service = token_service
         self.currency_service = currency_service
-        # self.session_manager = SessionManager()
-        # self.token_service = TokenService()
-        # self.currency_service = CurrencyAPIProxy()
+        self.user_observer = user_observer
         
     def main_menu(self):
         session = self.session_manager.get_current_session()
@@ -33,7 +27,7 @@ class PortfolioFacade:
             elif choice == "2":
                 self.token_service.view_top_tokens(username)
             elif choice == "3":
-                observer()
+                self.user_observer.observer()
             elif choice == "4":
                 self.token_service.calculate_portfolio(username)
             elif choice == "5":
