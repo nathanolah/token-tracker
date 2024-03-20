@@ -9,12 +9,10 @@ from observer import User
 
 def main():
     # Setup
+    db = DatabaseManager()
     session_manager = SessionManager()
     token_service = TokenService()
     currency_service = CurrencyAPIProxy()
-    
-    # Database Setup
-    db = DatabaseManager()
     
     print("\n")
     print("Token-Tracker")
