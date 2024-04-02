@@ -1,6 +1,7 @@
 #
 ################################################################################
 import requests
+from concurrent.futures import ThreadPoolExecutor
 from tabulate import tabulate
 from singleton import SessionManager, ConfigManager, CurrencyManager
 from utils.db_helpers import DBHelpersFactory
@@ -17,6 +18,7 @@ class TokenService():
         self.currency_service = CurrencyAPIProxy()
         self.db_helper_factory = DBHelpersFactory()
         self.user_helper = self.db_helper_factory.create_helper('user')
+        self.executor = None
 
     # View top Ethereum tokens
     def view_top_tokens(self, username):
@@ -176,12 +178,22 @@ class TokenService():
 
         if not tokenList:
             print(f'{username} has no tokens in their portfolio')
-        else:
+            return
+
+        num_tokens = len(tokenList)
+        max_workers = min(num_tokens, 20) # Limit to a maximum of 20 workers
+        self.executor = ThreadPoolExecutor(max_workers=max_workers)
+
+        try: 
             while True:
                 print("Tokens in portfolio")
+                futures = []
                 for i, token in enumerate(tokenList, 1):
-                    data = self.fetch_token_details(token)
-
+                    future = self.executor.submit(self.fetch_token_details, token)
+                    futures.append((future, i))
+                
+                for future, index in futures:
+                    data = future.result()
                     # Convert value based on set fiat currency
                     converted_price = self.currency_service.convert_value(data["price"]["bid"])
                     currency_type = currency_manager.get_currency() 
@@ -191,7 +203,7 @@ class TokenService():
 
                     name = data['name']
                     address = data['address']
-                    print(f'{i}. Token name: {name} | Price: ${formatted_price} ({currency_type}) | Address: {address}')
+                    print(f'{index}. Token name: {name} | Price: ${formatted_price} ({currency_type}) | Address: {address}')
 
                 if option == "view":
                     choice = input("Enter the number of the token to view details (or 'q' to quit): ")
@@ -202,8 +214,8 @@ class TokenService():
                     break
 
                 try:
-                    index = int(choice) - 1
-                    selected_token = tokenList[index]
+                    selected_index = int(choice) - 1
+                    selected_token = tokenList[selected_index]
                 except (ValueError, IndexError):
                     print("Invalid input. Please enter a valid number.")
                     continue
@@ -215,3 +227,7 @@ class TokenService():
                     self.remove_token_from_portfolio(username, selected_token)
                     # Update the token list after removal
                     tokenList.remove(selected_token)
+
+        finally:
+            # Shutdown the executor once done with token viewing
+            self.executor.shutdown(wait=True)
