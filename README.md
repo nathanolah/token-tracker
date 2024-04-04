@@ -2,7 +2,7 @@
 
 SFWRTECH 4SA3 - Software Architecture - Project
 
-This project has been developed to showcase the design patterns covered throughout the McMaster University course.
+This project has been developed to showcase the design patterns covered throughout the software architecture course at McMaster University course.
 
 ## Environment Requirement
 
