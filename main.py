@@ -1,3 +1,8 @@
+################################################################################
+# Token-tracker main.py
+#
+# Student Name: Nathan Olah
+# Student ID: 400493296
 #
 ################################################################################
 from singleton import DatabaseManager, SessionManager

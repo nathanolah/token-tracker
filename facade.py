@@ -1,3 +1,13 @@
+################################################################################
+# Facade Design Pattern
+#
+# Purpose: The facade pattern is used to provide an interface for various
+# services such as the token and currency service. Combining their 
+# functionality into once unified interface for users to interact and
+# execute application operations.
+# 
+# Student Name: Nathan Olah
+# Student ID: 400493296
 #
 ################################################################################
 

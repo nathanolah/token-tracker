@@ -1,4 +1,14 @@
 ################################################################################
+# Singleton Design Pattern
+#
+# Purpose: The singleton pattern manages aspects of the application such as,
+# configuration, currency preferences, database connections, and user sessions.
+# Each manager is separated by their use case to maintain simplicity. 
+# 
+# Student Name: Nathan Olah
+# Student ID: 400493296
+#
+################################################################################
 import mysql.connector
 import uuid 
 import configparser
@@ -15,6 +25,9 @@ class ConfigManager:
     
     def get_ethplorer_api_key(self):
         return self.config['API']['ethplorer_api_key']
+    
+    def get_moralis_api_key(self):
+        return self.config['API']['moralis_api_key']
     
     def get_currency_api_key(self):
         return self.config['API']['currency_api_key']

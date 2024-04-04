@@ -6,6 +6,9 @@
 # once and then use a proxy to access the cached data for subsequent requests.
 # This design is useful since we have a limited number of requests available.
 #
+# Student Name: Nathan Olah
+# Student ID: 400493296
+#
 ################################################################################
 import requests
 from abc import ABC, abstractmethod

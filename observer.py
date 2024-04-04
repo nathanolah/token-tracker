@@ -1,15 +1,26 @@
+################################################################################
 # Observer Design Pattern
+#
+# Purpose: The observer tracks real-time price data for each token in the 
+# user's portfolio by fetching price updates and notifying the user when
+# a price change occurs.
+# 
+# Student Name: Nathan Olah
+# Student ID: 400493296
 #
 ################################################################################
 from abc import ABC, abstractmethod
 import requests
 import threading
-from singleton import SessionManager, ConfigManager
+from services.currency_service import CurrencyAPIProxy
+from singleton import CurrencyManager, SessionManager, ConfigManager
 from utils.db_helpers import DBHelpersFactory
 
 config_manager = ConfigManager()
 session_manager = SessionManager()
+currency_manager = CurrencyManager()
 ethplorer_api_key = config_manager.get_ethplorer_api_key()
+moralis_api_key = config_manager.get_moralis_api_key()
 
 class Subject(ABC):
     @abstractmethod
@@ -50,7 +61,6 @@ class Token(Subject):
         return self._address
 
     def set_price(self, price):
-        # print(f"checking set prices {self._price} and {price}")
         if self._price != price:
             self._price = price
             self.notify_observers()
@@ -70,16 +80,24 @@ class TokenObserver:
         self.user = user
         self.ethplorer_api_key = ethplorer_api_key
         self.event = threading.Event()
+        self.currency_service = CurrencyAPIProxy()
     
+    def fetch_token_data(self, address):
+        headers = { 
+                    "accept": "application/json",
+                    "X-API-Key": moralis_api_key
+                }
+        res = requests.get(f"https://deep-index.moralis.io/api/v2.2/erc20/{address}/price", headers=headers)
+        token_data = res.json()
+        return token_data
+
     def observe_tokens(self):
         while not self.event.is_set():
             for token in self.user.tokens:
                 try:
-                    res = requests.get(f"https://api.ethplorer.io/getTokenInfo/{token.address}?apiKey={self.ethplorer_api_key}")
-                    data = res.json()
-                    price = float(data['price']['bid'])
-                    formatted_price = "{:.8f}".format(price)
-                    token.set_price(formatted_price)
+                    data = self.fetch_token_data(token.address)
+                    converted_price = self.currency_service.convert_value(data['usdPriceFormatted'])
+                    token.set_price(converted_price)
                     # print(f"Fetching: {token.address} | Token: {token.name} | Price: {token.price}")
                 except requests.RequestException as e:
                     print(f"Error fetching token info for {token.address}: {e}")
@@ -98,9 +116,19 @@ class User(Observer):
     def __init__(self, name):
         self.name = name
         self.tokens = []
+        self.currency_service = CurrencyAPIProxy()
+    
+    def fetch_token_data(self, address):
+        headers = { 
+                    "accept": "application/json",
+                    "X-API-Key": moralis_api_key
+                }
+        res = requests.get(f"https://deep-index.moralis.io/api/v2.2/erc20/{address}/price", headers=headers)
+        token_data = res.json()
+        return token_data
 
     def update(self, token):
-        print(f"Price update log: Hello {self.name}, {token.name} price changed to {token.price}.")
+        print(f"Hello {self.name}, {token.name} price changed to {token.price} {currency_manager.get_currency()}.")
 
     def add_token(self, token):
         self.tokens.append(token)
@@ -129,12 +157,10 @@ class User(Observer):
             currentUser = User(username)
 
             for token in tokenList:
-                res = requests.get(f"https://api.ethplorer.io/getTokenInfo/{token}?apiKey={ethplorer_api_key}")
-                data = res.json()
-                price = float(data['price']['bid'])
-                formatted_price = "{:.8f}".format(price)
-
-                newToken = Token(data['name'], formatted_price, data['address'])
+                data = self.fetch_token_data(token)
+                converted_price = self.currency_service.convert_value(data['usdPriceFormatted'])
+                
+                newToken = Token(data['tokenName'], converted_price, data['tokenAddress'])
                 currentUser.add_token(newToken)
             
             currentUser.observe_tokens()

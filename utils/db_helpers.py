@@ -1,4 +1,15 @@
 ################################################################################
+# Factory Design Pattern
+#
+# Purpose: The factory pattern manages instances of helper classes used for
+# interacting with different database entities. Each entity can perform
+# operations such as insertion, retrieval, and manipulation of user and
+# token data in the MySQL database.
+# 
+# Student Name: Nathan Olah
+# Student ID: 400493296
+#
+################################################################################
 import mysql.connector
 from mysql.connector import errorcode
 from singleton import DatabaseManager

@@ -1,3 +1,10 @@
+################################################################################
+# Login and Register
+#
+# Student Name: Nathan Olah
+# Student ID: 400493296
+#
+################################################################################
 from singleton import SessionManager
 from utils.db_helpers import DBHelpersFactory
 import getpass
