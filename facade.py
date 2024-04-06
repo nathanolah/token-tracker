@@ -8,6 +8,7 @@
 # 
 # Student Name: Nathan Olah
 # Student ID: 400493296
+# https://github.com/nathanolah/token-tracker
 #
 ################################################################################
 
@@ -20,7 +21,7 @@ class PortfolioFacade:
         
     def main_menu(self):
         session = self.session_manager.get_current_session()
-        username = session[1]
+        username = session[1] # Get username from current session
 
         while True:
             print("Main Menu:")
@@ -54,20 +55,16 @@ class PortfolioFacade:
             print("1. View Tokens in Portfolio")
             print("2. Add Token to Portfolio")
             print("3. Remove Token from Portfolio")
-            print("4. Sort by Metric")
-            print("5. Go Back")
+            print("4. Go Back")
             choice = input("Enter your choice: ")
 
             if choice == "1":
-                self.token_service.view_tokens(username, "view")
+                self.token_service.view_tokens(username, "view") # View tokens option
             elif choice == "2":
                 self.token_service.add_token_to_portfolio(username)
             elif choice == "3":
-                self.token_service.view_tokens(username, "remove")
+                self.token_service.view_tokens(username, "remove") # Remove token option
             elif choice == "4":
-                print('sort by metric')
-                # self.sort_by_metric()
-            elif choice == "5":
                 break
             else:
                 print("Invalid choice. Please try again.")

@@ -8,6 +8,7 @@
 #
 # Student Name: Nathan Olah
 # Student ID: 400493296
+# https://github.com/nathanolah/token-tracker
 #
 ################################################################################
 import requests
@@ -67,7 +68,7 @@ class CurrencyAPIProxy(CurrencyService):
 
     def convert_value(self, value):
         try:
-            # rate = self.get_exchange_rate() ## use during prod, limited api requests avaliable
+            rate = self.get_exchange_rate() # limited api requests available
             rate = 1
             return float(value) * rate
         except:

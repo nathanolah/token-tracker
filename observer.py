@@ -7,6 +7,7 @@
 # 
 # Student Name: Nathan Olah
 # Student ID: 400493296
+# https://github.com/nathanolah/token-tracker
 #
 ################################################################################
 from abc import ABC, abstractmethod
@@ -19,7 +20,6 @@ from utils.db_helpers import DBHelpersFactory
 config_manager = ConfigManager()
 session_manager = SessionManager()
 currency_manager = CurrencyManager()
-ethplorer_api_key = config_manager.get_ethplorer_api_key()
 moralis_api_key = config_manager.get_moralis_api_key()
 
 class Subject(ABC):
@@ -76,16 +76,16 @@ class Token(Subject):
             observer.update(self)
 
 class TokenObserver:
-    def __init__(self, user, ethplorer_api_key):
+    def __init__(self, user, moralis_api_key):
         self.user = user
-        self.ethplorer_api_key = ethplorer_api_key
+        self.moralis_api_key = moralis_api_key
         self.event = threading.Event()
         self.currency_service = CurrencyAPIProxy()
     
     def fetch_token_data(self, address):
         headers = { 
                     "accept": "application/json",
-                    "X-API-Key": moralis_api_key
+                    "X-API-Key": self.moralis_api_key
                 }
         res = requests.get(f"https://deep-index.moralis.io/api/v2.2/erc20/{address}/price", headers=headers)
         token_data = res.json()
@@ -109,6 +109,7 @@ class TokenObserver:
             self.event.wait(timeout=25)
 
     def stop_observing(self):
+        # Stop thread 
         self.event.set()
 
 # Concrete Observer
@@ -135,7 +136,7 @@ class User(Observer):
         token.register_observer(self)
 
     def observe_tokens(self):
-        observer = TokenObserver(self, ethplorer_api_key)
+        observer = TokenObserver(self, moralis_api_key)
         thread = threading.Thread(target=observer.observe_tokens)
         thread.start()
 
@@ -149,6 +150,7 @@ class User(Observer):
         user_helper = DBHelpersFactory().create_helper('user')
         tokenData = user_helper.retrive_tokens(username)
 
+        # Gather the list of token addresses
         tokenList = [token[0] for token in tokenData]
 
         if not tokenList:
@@ -158,9 +160,12 @@ class User(Observer):
 
             for token in tokenList:
                 data = self.fetch_token_data(token)
+                
+                # Covert price to set currency
                 converted_price = self.currency_service.convert_value(data['usdPriceFormatted'])
                 
                 newToken = Token(data['tokenName'], converted_price, data['tokenAddress'])
                 currentUser.add_token(newToken)
             
+            # Begin observing tokens
             currentUser.observe_tokens()
