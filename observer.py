@@ -60,17 +60,21 @@ class Token(Subject):
     def address(self):
         return self._address
 
+    # Checks for a change in price, sets new price and notifies observer
     def set_price(self, price):
         if self._price != price:
             self._price = price
             self.notify_observers()
 
+    # Register an observer for the token
     def register_observer(self, observer):
         self.observers.append(observer)
 
+    # Remove an observer for the token
     def remove_observer(self, observer):
         self.observers.remove(observer)
 
+    # Notify observers
     def notify_observers(self):
         for observer in self.observers:
             observer.update(self)
@@ -129,6 +133,7 @@ class User(Observer):
         return token_data
 
     def update(self, token):
+        # Log token changes to the user
         print(f"Hello {self.name}, {token.name} price changed to {token.price} {currency_manager.get_currency()}.")
 
     def add_token(self, token):
@@ -136,6 +141,7 @@ class User(Observer):
         token.register_observer(self)
 
     def observe_tokens(self):
+        # Spawn a new thread for observing. the main thread is waiting for the user to stop.
         observer = TokenObserver(self, moralis_api_key)
         thread = threading.Thread(target=observer.observe_tokens)
         thread.start()
@@ -146,6 +152,7 @@ class User(Observer):
         thread.join()
 
     def observer(self):
+        # Get username from current session and retrive user's portfolio tokens
         username = session_manager.get_username(session_manager.get_current_session()[0])
         user_helper = DBHelpersFactory().create_helper('user')
         tokenData = user_helper.retrive_tokens(username)
@@ -156,8 +163,8 @@ class User(Observer):
         if not tokenList:
             print(f'{username} has no tokens in their portfolio')
         else:
+            # Fetch token data for each token and add to current user for observer
             currentUser = User(username)
-
             for token in tokenList:
                 data = self.fetch_token_data(token)
                 

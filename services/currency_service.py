@@ -68,8 +68,8 @@ class CurrencyAPIProxy(CurrencyService):
 
     def convert_value(self, value):
         try:
+            # rate = 1 # use in testing
             rate = self.get_exchange_rate() # limited api requests available
-            rate = 1
             return float(value) * rate
         except:
             return None
